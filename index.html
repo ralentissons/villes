@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas des villes de France</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F0; --surface:#FBFCFA; --ink:#16231D; --muted:#5A675F; --line:#D6DCD5; --dot:#B3BDB5;
+  --accent:#1F6B4F; --nature:#3F8F66; --beton:#79828A;
+  --c1:#2F4B7C; --c2:#A8741A; --c3:#83406A; --warn:#A63B2F; --tint:rgba(31,107,79,.14);
+  --head:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --body:'Instrument Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1613; --surface:#161F1A; --ink:#E7EEE9; --muted:#93A198; --line:#2A3730; --dot:#3B4A42;
+    --accent:#5FBF92; --nature:#4FA77A; --beton:#8E979E;
+    --c1:#7C9BD6; --c2:#D6A14A; --c3:#C98BB0; --warn:#E5776A; --tint:rgba(95,191,146,.16);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1613; --surface:#161F1A; --ink:#E7EEE9; --muted:#93A198; --line:#2A3730; --dot:#3B4A42;
+  --accent:#5FBF92; --nature:#4FA77A; --beton:#8E979E;
+  --c1:#7C9BD6; --c2:#D6A14A; --c3:#C98BB0; --warn:#E5776A; --tint:rgba(95,191,146,.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-text-size-adjust:100%}
+a{color:inherit}
+small{font-size:.8em;color:var(--muted);font-weight:400}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+button{font:inherit;color:inherit;cursor:pointer}
+.num,.stat-val,.score-big,table.rk td{font-variant-numeric:tabular-nums}
+
+/* En-tête */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--head);font-weight:800;font-size:20px;letter-spacing:-.01em}
+.mark{display:grid;grid-template-columns:repeat(2,9px);gap:3px}
+.mark i{width:9px;height:9px;border-radius:2px;background:var(--beton)}
+.mark i:nth-child(4){background:var(--nature)}
+nav{display:flex;gap:4px}
+nav a{padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:500;color:var(--muted)}
+nav a[aria-current="page"]{color:var(--ink);background:var(--tint)}
+main{max-width:1080px;margin:0 auto;padding:28px 20px 64px}
+h1{font-family:var(--head);font-weight:800;font-size:clamp(30px,5.5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 10px}
+h2{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:-.01em;margin:0 0 14px}
+.lede{color:var(--muted);max-width:60ch;margin:0 0 22px}
+.demo{border-left:4px solid var(--c2);padding:8px 14px;margin:0 0 26px;font-size:14px;color:var(--muted);background:var(--surface)}
+
+/* Classement */
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.filters input,.filters select,.sel select{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-height:40px}
+.filters input{min-width:200px;flex:1 1 200px;max-width:320px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;align-items:center}
+.chips>span{color:var(--muted);font-size:14px;margin-right:2px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0F1613}}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table.rk{border-collapse:collapse;width:100%;min-width:760px}
+table.rk th,table.rk td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.rk th{font-weight:600;font-size:13.5px;color:var(--muted);background:var(--surface);position:sticky;top:0}
+table.rk th:first-child,table.rk td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px}
+table.rk tbody tr:last-child td{border-bottom:0}
+table.rk tbody tr{cursor:pointer}
+table.rk tbody tr:hover td{background:var(--tint)}
+table.rk th button{background:none;border:0;padding:0;font-weight:600;color:inherit}
+table.rk th[aria-sort="ascending"] button::after{content:" ▲";font-size:.7em}
+table.rk th[aria-sort="descending"] button::after{content:" ▼";font-size:.7em}
+table.rk th[aria-sort]{color:var(--ink)}
+.cell-name{display:flex;align-items:baseline;gap:12px}
+.pos{width:22px;color:var(--muted);font-size:14px}
+.cell-name a{font-family:var(--head);font-weight:700;font-size:17px;text-decoration:none}
+.cell-name small{display:block;line-height:1.2}
+td.sorted{position:relative;font-weight:600}
+td.sorted .bar{position:absolute;left:0;top:8px;bottom:8px;background:var(--tint);border-radius:0 6px 6px 0}
+td.sorted .v{position:relative}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.foot{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);max-width:80ch}
+
+/* Fiche ville */
+.back{display:inline-block;margin-bottom:16px;color:var(--muted);text-decoration:none;font-size:14px}
+.back:hover{color:var(--ink)}
+.meta{color:var(--muted);margin:0 0 14px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;background:var(--surface)}
+.pill b{font-family:var(--head)}
+.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:26px}
+.tabs button{background:none;border:0;padding:12px 16px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.split{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:40px;align-items:start}
+@media (max-width:820px){.split{grid-template-columns:1fr;gap:28px}}
+.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:min(100%,340px);aspect-ratio:1}
+.waffle i{border-radius:2px;background:var(--nature)}
+.waffle i.b{background:var(--beton)}
+.waffle.anim i.b{animation:pave .4s ease-out backwards;animation-delay:calc(var(--i)*12ms + .3s)}
+@keyframes pave{from{background:var(--nature)}to{background:var(--beton)}}
+@media (prefers-reduced-motion:reduce){.waffle.anim i.b{animation:none}html{scroll-behavior:auto}}
+.legend{margin:14px 0 0;padding:0;list-style:none;font-size:14px;display:grid;gap:6px}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.stat{padding:14px 0;border-bottom:1px solid var(--line)}
+.stat:first-of-type{padding-top:0}
+.stat-top{display:grid;grid-template-columns:1fr auto 84px;gap:10px;align-items:baseline}
+.stat-lab{font-weight:500}
+.stat-val{font-family:var(--head);font-weight:700;font-size:21px}
+.stat-val small{font-family:var(--body);margin-left:3px}
+.stat-rk{text-align:right;font-size:13px;color:var(--muted)}
+.strip{position:relative;height:18px;margin:8px 8px 0}
+.strip .trk{position:absolute;left:-8px;right:-8px;top:8px;height:2px;background:var(--line)}
+.strip i{position:absolute;top:5px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--dot)}
+.strip .med{position:absolute;top:3px;width:2px;height:12px;margin-left:-1px;background:var(--muted)}
+.strip b{position:absolute;top:0;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--accent);border:3px solid var(--surface)}
+.ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:1px 0 0}
+.score-big{font-family:var(--head);font-weight:800;font-size:68px;line-height:1;letter-spacing:-.03em}
+.score-big small{font-size:22px;font-family:var(--body);margin-left:4px}
+.parts{display:grid;gap:12px;margin:18px 0 26px}
+.part{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14.5px}
+.part .track{grid-column:1/-1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.part .track i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.part span:last-child{color:var(--muted)}
+.risks{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.risks li{border:1px solid var(--warn);color:var(--warn);border-radius:6px;padding:4px 10px;font-size:14px}
+.projects{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.projects li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:16px 0 16px 16px;border-bottom:1px solid var(--line);border-left:4px solid var(--accent)}
+.projects li.prevu{border-left-color:var(--c2)}
+.projects li.termine{border-left-color:var(--beton)}
+.projects h3{margin:0;font-family:var(--head);font-size:18px}
+.projects .st{font-weight:600;font-size:14px;text-align:right}
+.projects .tp{color:var(--muted);font-size:14px}
+.projects .ec{color:var(--muted);font-size:14px;text-align:right}
+
+/* Comparateur */
+.sels{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:26px}
+.sel{display:grid;gap:4px;font-size:14px;color:var(--muted);border-top:4px solid var(--c1);padding-top:8px}
+.sel.s2{border-top-color:var(--c2)} .sel.s3{border-top-color:var(--c3)}
+.cmp-group{margin-bottom:30px}
+.cmp-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.cmp-row>b{display:block;font-weight:600;margin-bottom:8px}
+.cmp-line{display:grid;grid-template-columns:96px 1fr 130px;gap:12px;align-items:center;padding:3px 0;font-size:14.5px}
+.cmp-bar{height:12px;background:transparent}
+.cmp-bar i{display:block;height:100%;border-radius:0 6px 6px 0;background:var(--c1)}
+.cmp-bar i.s2{background:var(--c2)} .cmp-bar i.s3{background:var(--c3)}
+.cmp-bar i.dim{opacity:.4}
+.cmp-val{text-align:right;font-family:var(--head);font-weight:600}
+.cmp-val.best{font-weight:800}
+@media (max-width:520px){.cmp-line{grid-template-columns:70px 1fr 100px;gap:8px}.stat-top{grid-template-columns:1fr auto}.stat-rk{grid-column:1/-1;text-align:left}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <a class="brand" href="#/"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Atlas des villes</a>
+  <nav aria-label="Navigation principale"><a href="#/" id="nav-rk">Classement</a><a href="#/comparer" id="nav-cmp">Comparer</a></nav>
+</div></header>
+<main id="app"></main>
+
+<script>
+/* ============ DONNÉES (démonstration) ============
+   Populations et superficies : ordres de grandeur.
+   Autres indicateurs : valeurs indicatives, à remplacer par les jeux officiels. */
+const CITIES = [
+ {id:'paris',nom:'Paris',dep:'75',region:'Île-de-France',pop:2133111,surf:105.4,evo:-3.0,age:39.5,revenu:28500,chomage:7.5,pauvrete:15.5,prix:10000,vacants:8.5,social:22,artif:93,verts:6,air:78,douces:20,risques:['Inondation (Seine)','Canicule et îlot de chaleur'],projets:[['Grand Paris Express (lignes 14, 15, 16, 17, 18)','Transport','En cours','2030'],['Cours d’école « Oasis »','Écologie','En cours','—']]},
+ {id:'marseille',nom:'Marseille',dep:'13',region:'Provence-Alpes-Côte d’Azur',pop:873076,surf:240.6,evo:2.0,age:39,revenu:18700,chomage:12.5,pauvrete:26,prix:3800,vacants:8,social:16,artif:40,verts:45,air:70,douces:12,risques:['Feux de forêt','Inondation','Submersion marine'],projets:[['Plan « Marseille en Grand »','Rénovation','En cours','—'],['Renouvellement urbain des quartiers Nord (NPNRU)','Rénovation urbaine','En cours','—']]},
+ {id:'lyon',nom:'Lyon',dep:'69',region:'Auvergne-Rhône-Alpes',pop:522250,surf:47.9,evo:9.5,age:36,revenu:22500,chomage:8,pauvrete:17,prix:5500,vacants:6.5,social:20,artif:78,verts:12,air:72,douces:24,risques:['Inondation (Rhône, Saône)','Pollution de l’air'],projets:[['Rénovation du quartier de la Part-Dieu','Aménagement','En cours','—'],['Végétalisation des cours d’école','Écologie','En cours','—']]},
+ {id:'toulouse',nom:'Toulouse',dep:'31',region:'Occitanie',pop:493465,surf:118.3,evo:8,age:35.5,revenu:21900,chomage:9,pauvrete:18,prix:4300,vacants:6,social:20,artif:55,verts:27,air:76,douces:19,risques:['Inondation (Garonne)','Retrait-gonflement des argiles'],projets:[['Ligne C du métro','Transport','En cours','—'],['Toulouse Aerospace','Aménagement','En cours','—']]},
+ {id:'nice',nom:'Nice',dep:'06',region:'Provence-Alpes-Côte d’Azur',pop:348085,surf:71.9,evo:0.5,age:43,revenu:21000,chomage:9.5,pauvrete:19,prix:5700,vacants:12,social:10,artif:50,verts:22,air:74,douces:20,risques:['Séisme','Inondation','Feux de forêt'],projets:[['Ligne 4 du tramway','Transport','En cours','—'],['Éco-Vallée (Plaine du Var)','Aménagement','En cours','—']]},
+ {id:'nantes',nom:'Nantes',dep:'44',region:'Pays de la Loire',pop:320732,surf:65.2,evo:8.5,age:36,revenu:22300,chomage:7.5,pauvrete:15,prix:4200,vacants:6.5,social:24,artif:60,verts:58,air:82,douces:27,risques:['Inondation (Loire)','Tempêtes'],projets:[['Île de Nantes','Aménagement','En cours','—'],['Nouveau CHU sur l’île de Nantes','Équipement','En cours','—']]},
+ {id:'montpellier',nom:'Montpellier',dep:'34',region:'Occitanie',pop:302454,surf:56.9,evo:10,age:34,revenu:19600,chomage:10.5,pauvrete:24,prix:3900,vacants:7.5,social:20,artif:60,verts:30,air:79,douces:22,risques:['Inondation (épisodes cévenols)','Canicule'],projets:[['Ligne 5 du tramway','Transport','En cours','—'],['ZAC Ode à la Mer','Aménagement','En cours','—']]},
+ {id:'strasbourg',nom:'Strasbourg',dep:'67',region:'Grand Est',pop:287228,surf:78.3,evo:5,age:35,revenu:20900,chomage:10,pauvrete:21,prix:3700,vacants:6,social:21,artif:50,verts:30,air:74,douces:33,risques:['Inondation (Rhin)','Séisme (modéré)'],projets:[['Projet des Deux-Rives','Aménagement','En cours','—'],['Extension du tramway et des pistes cyclables','Transport','En cours','—']]},
+ {id:'bordeaux',nom:'Bordeaux',dep:'33',region:'Nouvelle-Aquitaine',pop:261804,surf:49.4,evo:9,age:36,revenu:22300,chomage:8,pauvrete:17,prix:4900,vacants:6,social:20,artif:60,verts:33,air:81,douces:26,risques:['Inondation (Garonne)','Tempêtes'],projets:[['Bordeaux Euratlantique','Aménagement','En cours','—'],['Extension de la ligne D du tramway','Transport','En cours','—']]},
+ {id:'lille',nom:'Lille',dep:'59',region:'Hauts-de-France',pop:236710,surf:34.8,evo:4,age:33,revenu:17600,chomage:12.5,pauvrete:26,prix:3600,vacants:5,social:25,artif:80,verts:11,air:66,douces:30,risques:['Inondation','Pollution de l’air'],projets:[['Renouvellement urbain de Lille-Sud (NPNRU)','Rénovation urbaine','En cours','—'],['Réseau express Hauts-de-France','Transport','Prévu','—']]},
+ {id:'rennes',nom:'Rennes',dep:'35',region:'Bretagne',pop:222485,surf:50.4,evo:6,age:33,revenu:21500,chomage:8,pauvrete:17.5,prix:4000,vacants:5.5,social:24,artif:55,verts:55,air:85,douces:32,risques:['Inondation (Vilaine)'],projets:[['Ligne b du métro','Transport','Terminé','2022'],['Écoquartier Baud-Chardonnet','Aménagement','En cours','—']]},
+ {id:'grenoble',nom:'Grenoble',dep:'38',region:'Auvergne-Rhône-Alpes',pop:158240,surf:18.1,evo:2,age:34,revenu:20200,chomage:10,pauvrete:21,prix:3000,vacants:7.5,social:20,artif:82,verts:22,air:65,douces:34,risques:['Inondation','Mouvements de terrain','Risque industriel'],projets:[['Presqu’île scientifique','Aménagement','En cours','—'],['Réseau Chronovélo','Mobilité','En cours','—']]},
+ {id:'dijon',nom:'Dijon',dep:'21',region:'Bourgogne-Franche-Comté',pop:159106,surf:40.4,evo:2.5,age:35.5,revenu:21300,chomage:8.5,pauvrete:17,prix:2700,vacants:8,social:25,artif:65,verts:43,air:77,douces:24,risques:['Risques limités'],projets:[['Cité internationale de la gastronomie et du vin','Équipement','Terminé','2022'],['Écoquartier Heudelet','Aménagement','En cours','—']]},
+ {id:'angers',nom:'Angers',dep:'49',region:'Pays de la Loire',pop:157175,surf:42.7,evo:6,age:36,revenu:20700,chomage:8.5,pauvrete:19,prix:3000,vacants:7.5,social:20,artif:55,verts:62,air:83,douces:23,risques:['Inondation (Maine)'],projets:[['Cœur de Maine','Aménagement','En cours','—'],['Extension du réseau de tramway','Transport','En cours','—']]},
+ {id:'brest',nom:'Brest',dep:'29',region:'Bretagne',pop:139163,surf:49.5,evo:-1,age:38,revenu:20700,chomage:8.5,pauvrete:17,prix:2000,vacants:7.5,social:21,artif:50,verts:40,air:92,douces:27,risques:['Submersion marine','Tempêtes'],projets:[['Renouvellement urbain de Bellevue (NPNRU)','Rénovation urbaine','En cours','—'],['Aménagement du plateau des Capucins','Aménagement','Terminé','—']]},
+ {id:'saint-etienne',nom:'Saint-Étienne',dep:'42',region:'Auvergne-Rhône-Alpes',pop:173000,surf:80,evo:-2,age:38,revenu:17300,chomage:12,pauvrete:25,prix:1300,vacants:15,social:25,artif:45,verts:38,air:70,douces:20,risques:['Mouvements de terrain (anciennes mines)','Inondation'],projets:[['Programme Action Cœur de Ville','Rénovation','En cours','—'],['Quartier Manufacture-Plaine Achille','Aménagement','En cours','—']]}
+];
+const byId = Object.fromEntries(CITIES.map(c=>[c.id,c]));
+CITIES.forEach(c=>{c.densite=c.pop/c.surf});
+
+/* Score écologique : pondérations affichées telles quelles à l'écran */
+const W = {artif:.30, verts:.25, air:.20, douces:.25};
+(function(){
+  const mm={};
+  for(const k in W){const v=CITIES.map(c=>c[k]);mm[k]=[Math.min(...v),Math.max(...v)]}
+  CITIES.forEach(c=>{
+    c.parts={};let s=0;
+    for(const k in W){let n=(c[k]-mm[k][0])/(mm[k][1]-mm[k][0]);if(k==='artif')n=1-n;c.parts[k]=n;s+=W[k]*n}
+    c.score=s*100;
+  });
+})();
+
+/* ============ INDICATEURS ============ */
+const fmtInt=n=>Math.round(n).toLocaleString('fr-FR');
+const fmt1=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const M={
+  pop:{label:'Habitants',unit:'',f:fmtInt,dir:0},
+  densite:{label:'Densité',unit:' hab/km²',f:fmtInt,dir:0},
+  evo:{label:'Évolution sur 10 ans',unit:' %',f:v=>(v>0?'+':'')+fmt1(v),dir:0},
+  age:{label:'Âge moyen',unit:' ans',f:fmt1,dir:0},
+  surf:{label:'Superficie',unit:' km²',f:fmt1,dir:0},
+  revenu:{label:'Revenu médian',unit:' €/an',f:fmtInt,dir:1},
+  chomage:{label:'Taux de chômage',unit:' %',f:fmt1,dir:-1},
+  pauvrete:{label:'Taux de pauvreté',unit:' %',f:fmt1,dir:-1},
+  prix:{label:'Prix au m²',unit:' €',f:fmtInt,dir:0},
+  vacants:{label:'Logements vacants',unit:' %',f:fmt1,dir:-1},
+  social:{label:'Logements sociaux',unit:' %',f:fmt1,dir:0},
+  artif:{label:'Sols artificialisés',unit:' %',f:fmt1,dir:-1},
+  verts:{label:'Espaces verts par habitant',unit:' m²',f:fmt1,dir:1},
+  air:{label:'Jours de bonne qualité de l’air',unit:' %',f:fmtInt,dir:1},
+  douces:{label:'Trajets domicile-travail à pied ou à vélo',unit:' %',f:fmt1,dir:1},
+  score:{label:'Score écologique',unit:' /100',f:fmtInt,dir:1}
+};
+const ord=r=>r===1?'1ᵉʳ':r+'ᵉ';
+function rankOf(c,k){
+  const d=M[k].dir;
+  const s=[...CITIES].sort((a,b)=>d<0?a[k]-b[k]:b[k]-a[k]);
+  return s.findIndex(x=>x.id===c.id)+1;
+}
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const $app=document.getElementById('app');
+
+/* ============ COMPOSANTS ============ */
+function strip(c,k){
+  const v=CITIES.map(x=>x[k]).sort((a,b)=>a-b);
+  const mn=v[0],mx=v[v.length-1],med=(v[(v.length-1)>>1]+v[v.length>>1])/2;
+  const pos=x=>((x-mn)/(mx-mn))*100;
+  const dots=CITIES.filter(x=>x.id!==c.id).map(x=>`<i style="left:${pos(x[k])}%"></i>`).join('');
+  return `<div class="strip" aria-hidden="true"><span class="trk"></span>${dots}<span class="med" style="left:${pos(med)}%" title="Médiane"></span><b style="left:${pos(c[k])}%"></b></div><div class="ends" aria-hidden="true"><span>${M[k].f(mn)}</span><span>${M[k].f(mx)}</span></div>`;
+}
+function statRow(c,k){
+  const m=M[k];
+  return `<div class="stat"><div class="stat-top"><span class="stat-lab">${m.label}</span><span class="stat-val">${m.f(c[k])}<small>${m.unit}</small></span><span class="stat-rk">${ord(rankOf(c,k))} sur ${CITIES.length}</span></div>${strip(c,k)}</div>`;
+}
+function waffle(c,anim){
+  const n=Math.round(c.artif);let cells='';
+  for(let i=0;i<100;i++)cells+=`<i class="${i<n?'b':''}" style="--i:${i}"></i>`;
+  return `<div class="waffle ${anim?'anim':''}" role="img" aria-label="Sur 100 hectares, ${n} sont artificialisés">${cells}</div>
+  <ul class="legend"><li><i style="background:var(--beton)"></i>${n} ha artificialisés</li><li><i style="background:var(--nature)"></i>${100-n} ha naturels, agricoles ou forestiers</li></ul>
+  <p class="note">Chaque case représente 1 % de la surface de la commune.</p>`;
+}
+const RANK_NOTE='<p class="note">Le rang 1 désigne la meilleure valeur lorsqu’il existe un sens favorable (moins de chômage, moins de sols artificialisés…), sinon la valeur la plus élevée. Le point plein est la ville, le trait la médiane des villes du site.</p>';
+
+/* ============ VUE : CLASSEMENT ============ */
+let st={key:'pop',asc:false,region:'',q:''};
+const COLS=['pop','densite','prix','revenu','artif','score'];
+const COLNAMES={pop:'Habitants',densite:'Densité',prix:'Prix m²',revenu:'Revenu médian',artif:'Artificialisation',score:'Score écologique'};
+
+function viewRanking(){
+  const regions=[...new Set(CITIES.map(c=>c.region))].sort((a,b)=>a.localeCompare(b,'fr'));
+  $app.innerHTML=`
+  <h1>Les villes françaises en chiffres</h1>
+  <p class="lede">Population, économie, logement, écologie : comparez les villes sur les mêmes critères et ouvrez une fiche pour le détail.</p>
+  <p class="demo">Données de démonstration : populations arrondies, autres indicateurs indicatifs. À remplacer par les jeux officiels avant publication.</p>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Rechercher une ville" aria-label="Rechercher une ville" value="${st.q}">
+    <select id="reg" aria-label="Filtrer par région"><option value="">Toutes les régions</option>${regions.map(r=>`<option ${r===st.region?'selected':''}>${r}</option>`).join('')}</select>
+  </div>
+  <div id="rk"></div>
+  <p class="foot">Le score écologique sur 100 combine quatre critères, comparés entre les villes du site : sols artificialisés (30 %, moins c’est mieux), espaces verts par habitant (25 %), qualité de l’air (20 %) et trajets à pied ou à vélo (25 %).</p>`;
+  document.getElementById('q').addEventListener('input',e=>{st.q=e.target.value;updateTable()});
+  document.getElementById('reg').addEventListener('change',e=>{st.region=e.target.value;updateTable()});
+  updateTable();
+}
+function updateTable(){
+  const rows=CITIES.filter(c=>(!st.region||c.region===st.region)&&norm(c.nom).includes(norm(st.q)))
+    .sort((a,b)=>st.asc?a[st.key]-b[st.key]:b[st.key]-a[st.key]);
+  const all=CITIES.map(c=>c[st.key]),mn=Math.min(...all),mx=Math.max(...all);
+  const chips=COLS.map(k=>`<button class="chip" data-sort="${k}" aria-pressed="${st.key===k}">${COLNAMES[k]}</button>`).join('');
+  const head=COLS.map(k=>`<th scope="col" ${st.key===k?`aria-sort="${st.asc?'ascending':'descending'}"`:''}><button data-sort="${k}">${COLNAMES[k]}</button></th>`).join('');
+  const body=rows.map((c,i)=>`<tr data-go="${c.id}"><td><div class="cell-name"><span class="pos">${i+1}</span><div><a href="#/ville/${c.id}">${c.nom}</a><small>${c.region}</small></div></div></td>${COLS.map(k=>{
+    const v=`${M[k].f(c[k])}${k==='artif'?' %':''}`;
+    if(k!==st.key)return `<td>${v}</td>`;
+    const w=6+94*((c[k]-mn)/(mx-mn));
+    return `<td class="sorted"><span class="bar" style="width:${w}%"></span><span class="v">${v}</span></td>`;
+  }).join('')}</tr>`).join('');
+  document.getElementById('rk').innerHTML=`
+    <div class="chips"><span>Classer par</span>${chips}</div>
+    ${rows.length?`<div class="tablewrap"><table class="rk"><thead><tr><th scope="col">Ville</th>${head}</tr></thead><tbody>${body}</tbody></table></div>`
+    :`<div class="empty">Aucune ville ne correspond à cette recherche. Modifiez le nom ou choisissez « Toutes les régions ».</div>`}`;
+}
+function setSort(k){
+  if(st.key===k)st.asc=!st.asc;else{st.key=k;st.asc=M[k].dir<0}
+  updateTable();
+}
+
+/* ============ VUE : FICHE VILLE ============ */
+const TABS=[['apercu','Aperçu'],['demographie','Démographie'],['economie','Économie et logement'],['ecologie','Écologie'],['projets','Projets']];
+let lastCity=null;
+
+function viewCity(id,tab){
+  const c=byId[id];
+  if(!c){$app.innerHTML=`<a class="back" href="#/">← Classement</a><h1>Ville introuvable</h1><p class="lede">Cette ville n’est pas dans la liste. Retournez au classement pour en choisir une.</p>`;return}
+  if(!TABS.some(t=>t[0]===tab))tab='apercu';
+  const animate=lastCity!==id;lastCity=id;
+  let content='';
+  if(tab==='apercu'){
+    content=`<div class="split"><section><h2>Sur 100 hectares de la commune</h2>${waffle(c,animate)}</section>
+    <section><h2>Repères</h2>${['pop','densite','revenu','chomage','prix','score'].map(k=>statRow(c,k)).join('')}${RANK_NOTE}</section></div>`;
+  }else if(tab==='demographie'){
+    content=`<section><h2>Démographie</h2>${['pop','evo','age','surf','densite'].map(k=>statRow(c,k)).join('')}${RANK_NOTE}</section>`;
+  }else if(tab==='economie'){
+    content=`<section><h2>Économie et logement</h2>${['revenu','chomage','pauvrete','prix','vacants','social'].map(k=>statRow(c,k)).join('')}${RANK_NOTE}</section>`;
+  }else if(tab==='ecologie'){
+    const labels={artif:'Sols préservés (100 − artificialisation)',verts:'Espaces verts par habitant',air:'Qualité de l’air',douces:'Trajets à pied ou à vélo'};
+    content=`<div class="split"><section><h2>Sur 100 hectares de la commune</h2>${waffle(c,false)}</section>
+    <section><h2>Score écologique</h2>
+      <div class="score-big">${fmtInt(c.score)}<small>/100</small></div>
+      <p class="note">${ord(rankOf(c,'score'))} sur ${CITIES.length} villes du site.</p>
+      <div class="parts">${Object.keys(W).map(k=>`<div class="part"><span>${labels[k]} <small>(poids ${Math.round(W[k]*100)} %)</small></span><span>+${fmt1(W[k]*c.parts[k]*100)} pts</span><div class="track"><i style="width:${c.parts[k]*100}%"></i></div></div>`).join('')}</div>
+      ${['artif','verts','air','douces'].map(k=>statRow(c,k)).join('')}
+      <h2 style="margin-top:26px">Risques naturels et technologiques</h2>
+      <ul class="risks">${c.risques.map(r=>`<li>${r}</li>`).join('')}</ul>
+      ${RANK_NOTE}
+    </section></div>`;
+  }else{
+    content=`<section><h2>Projets en cours et récents</h2><ul class="projects">${c.projets.map(p=>`<li class="${p[2]==='Prévu'?'prevu':p[2]==='Terminé'?'termine':''}"><h3>${p[0]}</h3><span class="st">${p[2]}</span><span class="tp">${p[1]}</span><span class="ec">${p[3]==='—'?'Échéance non renseignée':'Échéance : '+p[3]}</span></li>`).join('')}</ul>
+    <p class="note">Exemples de saisie manuelle. Chaque projet peut avoir un type, un statut et une échéance ; à vérifier avant publication.</p></section>`;
+  }
+  $app.innerHTML=`
+  <a class="back" href="#/">← Classement</a>
+  <h1>${c.nom}</h1>
+  <p class="meta">${c.region} · département ${c.dep}</p>
+  <div class="pills"><span class="pill"><b>${ord(rankOf(c,'pop'))}</b> par la population</span><span class="pill"><b>${ord(rankOf(c,'score'))}</b> au score écologique</span><span class="pill"><b>${fmt1(c.artif)} %</b> de sols artificialisés</span></div>
+  <div class="tabs" role="tablist" aria-label="Sections de la fiche">${TABS.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tab}">${t[1]}</button>`).join('')}</div>
+  <div role="tabpanel">${content}</div>
+  <p class="demo" style="margin-top:36px">Données de démonstration : valeurs indicatives, à remplacer par les jeux officiels.</p>`;
+  document.title=`${c.nom} : chiffres clés | Atlas des villes`;
+}
+
+/* ============ VUE : COMPARATEUR ============ */
+const GROUPS=[['Démographie',['pop','densite','evo','age']],['Économie',['revenu','chomage','pauvrete','prix']],['Logement',['vacants','social']],['Écologie',['score','artif','verts','air','douces']]];
+function cmpRow(cs,k){
+  const m=M[k],v=cs.map(c=>c[k]),mn=Math.min(...v),mx=Math.max(...v);
+  const best=m.dir?(m.dir>0?mx:mn):null;
+  const lines=cs.map((c,i)=>{
+    const x=c[k];
+    const w=mn<0?6+94*((x-mn)/(mx-mn)):(mx===0?3:Math.max(3,x/mx*100));
+    const isBest=best!==null&&x===best&&mn!==mx;
+    const dim=best!==null&&!isBest&&mn!==mx;
+    return `<div class="cmp-line"><span>${c.nom}</span><span class="cmp-bar"><i class="s${i+1} ${dim?'dim':''}" style="width:${w}%"></i></span><span class="cmp-val ${isBest?'best':''}">${m.f(x)}<small>${m.unit}</small></span></div>`;
+  }).join('');
+  return `<div class="cmp-row"><b>${m.label}</b>${lines}</div>`;
+}
+function viewCompare(list){
+  let ids=[...new Set((list||[]).filter(i=>byId[i]))].slice(0,3);
+  if(ids.length<2)ids=['nantes','lyon'];
+  const cs=ids.map(i=>byId[i]);
+  const opts=[...CITIES].sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));
+  const sels=[0,1,2].map(n=>`<label class="sel s${n+1}"><span>Ville ${n+1}${n===2?' (facultative)':''}</span><select data-slot="${n}">${n===2?'<option value="">Aucune</option>':''}${opts.map(c=>`<option value="${c.id}" ${cs[n]&&cs[n].id===c.id?'selected':''}>${c.nom}</option>`).join('')}</select></label>`).join('');
+  $app.innerHTML=`
+  <h1>Comparer des villes</h1>
+  <p class="lede">Choisissez deux ou trois villes. Quand un sens favorable existe, la meilleure valeur est en couleur pleine.</p>
+  <div class="sels">${sels}</div>
+  ${GROUPS.map(g=>`<section class="cmp-group"><h2>${g[0]}</h2>${g[1].map(k=>cmpRow(cs,k)).join('')}</section>`).join('')}
+  <p class="demo">Données de démonstration : valeurs indicatives, à remplacer par les jeux officiels.</p>`;
+  document.title='Comparer des villes | Atlas des villes';
+}
+
+/* ============ ROUTEUR ============ */
+function render(){
+  const [p1,p2,p3]=location.hash.replace(/^#\/?/,'').split('/');
+  const nr=document.getElementById('nav-rk'),nc=document.getElementById('nav-cmp');
+  nr.removeAttribute('aria-current');nc.removeAttribute('aria-current');
+  if(p1==='ville'){
+    nr.setAttribute('aria-current','page');
+    const prev=lastCity;viewCity(p2,p3);
+    if(prev!==lastCity)window.scrollTo(0,0);
+  }else if(p1==='comparer'){
+    lastCity=null;nc.setAttribute('aria-current','page');
+    viewCompare(p2?p2.split(','):[]);window.scrollTo(0,0);
+  }else{
+    lastCity=null;nr.setAttribute('aria-current','page');
+    viewRanking();document.title='Atlas des villes de France';
+  }
+}
+window.addEventListener('hashchange',render);
+
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-sort]');
+  if(s){setSort(s.dataset.sort);return}
+  const t=e.target.closest('[data-tab]');
+  if(t){const id=location.hash.replace(/^#\/?/,'').split('/')[1];location.hash=`#/ville/${id}/${t.dataset.tab}`;return}
+  const r=e.target.closest('tr[data-go]');
+  if(r&&!e.target.closest('a')){location.hash=`#/ville/${r.dataset.go}`}
+});
+document.addEventListener('change',e=>{
+  if(e.target.matches('select[data-slot]')){
+    const v=[...document.querySelectorAll('select[data-slot]')].map(s=>s.value).filter(Boolean);
+    location.hash=`#/comparer/${v.join(',')}`;
+  }
+});
+render();
+</script>
+</body>
+</html>
